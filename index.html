@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Keep all your existing CSS styles -->
+    <style>
+        /* ... your existing CSS styles ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Enter task">
+            <input type="text" id="categoryInput" placeholder="Category">
+            <button id="addTaskBtn">Add Task</button>
+        </div>
+
+        <div id="taskList" class="task-list"></div>
+    </div>
+
+    <!-- Supabase Client MUST BE FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 1. INITIALIZE SUPABASE FIRST
+        const supabase = createClient(
+            'https://jjsumdzcadjnjfkmhaei.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impqc3VtZHpjYWRqbmpma21oYWVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMzEyMjEsImV4cCI6MjA1NzkwNzIyMX0.k3dYJ7vcy3H8P9zcC1GqfAJjPVLq6kRwZHjZGm7DaBI'
+        );
+
+        // 2. DOM ELEMENTS
+        const taskInput = document.getElementById('taskInput');
+        const categoryInput = document.getElementById('categoryInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+
+        // 3. EVENT LISTENERS
+        addTaskBtn.addEventListener('click', addTask);
+
+        // 4. FUNCTIONS
+        async function addTask() {
+            const taskText = taskInput.value.trim();
+            const taskCategory = categoryInput.value.trim();
+
+            if (!taskText || !taskCategory) {
+                alert('Please fill in both fields');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('tasks')
+                    .insert({
+                        text: taskText,
+                        category: taskCategory
+                    });
+
+                if (error) throw error;
+
+                taskInput.value = '';
+                categoryInput.value = '';
+                await loadTasks();
+            } catch (error) {
+                console.error('Error adding task:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // ... rest of your functions (deleteTask, loadTasks, renderTasks)
+
+        // 5. INITIAL LOAD
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTasks();
+        });
+    </script>
+</body>
+</html>
